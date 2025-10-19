@@ -1,0 +1,120 @@
+{
+  "todo": [
+    {
+      "id": "1",
+      "title": "1Learn JavaScript",
+      "status": "todo",
+      "dueDate": "2020-12-31",
+      "description": "Learn JavaScript basics",
+      "assignedUser": 1,
+      "priority": "high",
+      "tags": []
+    },
+    {
+      "id": "2",
+      "title": "3Learn JavaScript1",
+      "status": "inProgress",
+      "dueDate": "2020-12-31",
+      "description": "Learn JavaScript basics",
+      "assignedUser": 1,
+      "priority": "high",
+      "tags": []
+    },
+    {
+      "id": "3",
+      "title": "2Learn JavaScript2",
+      "status": "done",
+      "dueDate": "2020-12-31",
+      "description": "Learn JavaScript basics",
+      "assignedUser": 1,
+      "priority": "low",
+      "tags": []
+    },
+    {
+      "id": "4",
+      "title": "4Learn JavaScript3",
+      "status": "todo",
+      "dueDate": "2020-12-31",
+      "description": "Learn JavaScript basics",
+      "assignedUser": 1,
+      "priority": "high",
+      "tags": []
+    },
+    {
+      "id": "dec0",
+      "title": "wegdsg",
+      "description": "4gerds",
+      "dueDate": "2025-10-08",
+      "priority": "high",
+      "status": "inProgress",
+      "assignedUser": "3"
+    },
+    {
+      "id": "ff58",
+      "title": "wd",
+      "description": "",
+      "dueDate": "2025-10-14",
+      "priority": "high",
+      "status": "todo",
+      "assignedUser": "3"
+    },
+    {
+      "id": "2857",
+      "title": "rg",
+      "description": "ewf",
+      "dueDate": "2025-10-02",
+      "priority": "low",
+      "status": "todo",
+      "assignedUser": "4"
+    },
+    {
+      "id": "ccc7",
+      "title": "er",
+      "description": "",
+      "dueDate": "2025-10-08",
+      "priority": "high",
+      "status": "todo",
+      "assignedUser": "3"
+    },
+    {
+      "id": "73f8",
+      "title": "Python",
+      "description": "Django framework for backend services",
+      "dueDate": "2025-10-09",
+      "priority": "high",
+      "status": "inProgress",
+      "assignedUser": "427d"
+    }
+  ],
+  "users": [
+    {
+      "id": "1",
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    {
+      "id": "2",
+      "name": "Jean Doe",
+      "email": "jean@example.com"
+    },
+    {
+      "id": "3",
+      "name": "Bean Doe",
+      "email": "bean@example.com"
+    },
+    {
+      "id": "4",
+      "name": "Dean Doe",
+      "email": "dean@example.com"
+    },
+    {
+      "id": "427d",
+      "name": "Dean Doe",
+      "email": "dean@example.com"
+    }
+  ],
+  "auth": {
+    "username": "admin",
+    "password": "123"
+  }
+}
