@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { TextField, FormControl, InputLabel, Select, MenuItem, Button } from "@mui/material";
+import { TextField, FormControl, InputLabel, Select, MenuItem, Button, Box } from "@mui/material";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
@@ -52,6 +52,20 @@ const TaskForm = ({ onSubmit, taskData, shouldResetOnSubmit, buttonText }: TaskF
     });
 
     useEffect(() => {
+        if (taskData) {
+            reset({
+                title: taskData.title || "",
+                description: taskData.description || "",
+                dueDate: taskData.dueDate || "",
+                priority: taskData.priority || "",
+                status: taskData.status || "",
+                assignedUser: taskData.assignedUser || "",
+            });
+            setDueDate(taskData.dueDate ? dayjs(taskData.dueDate) : null);
+        }
+    }, [taskData, reset]);
+
+    useEffect(() => {
         const fetchUsers = async () => {
             try {
                 const users = await getUsers();
@@ -71,14 +85,14 @@ const TaskForm = ({ onSubmit, taskData, shouldResetOnSubmit, buttonText }: TaskF
 
     const handleSubmitClick = (data: TaskFormInputs) => {
         onSubmit(data);
-        if(shouldResetOnSubmit) {
+        if (shouldResetOnSubmit) {
             reset();
             setDueDate(null);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(handleSubmitClick)}>
             <TextField
                 label="Title"
                 variant="outlined"
@@ -170,16 +184,30 @@ const TaskForm = ({ onSubmit, taskData, shouldResetOnSubmit, buttonText }: TaskF
                     )}
                 />
             </FormControl>
+            <Box display="flex" justifyContent="space-between" gap={2} mt={2}>
+                <Button
+                    variant="contained"
+                    color="warning"
+                    type="reset"
+                    onClick={() => {
+                        reset();
+                        setDueDate(null);
+                    }}
+                    sx={{ flex: 1 }}
+                >
+                    Reset Changes
+                </Button>
 
-            <Button
-                variant="contained"
-                color="primary"
-                type="submit"
-                fullWidth
-                sx={{ mt: 2 }}
-            >
-                {buttonText}
-            </Button>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    type="submit"
+                    sx={{ flex: 1 }}
+                >
+                    {buttonText}
+                </Button>
+            </Box>
+
         </form>
     );
 }

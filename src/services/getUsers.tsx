@@ -7,7 +7,6 @@ const getUsers = async () => {
     try {
         const response = await axios.get(`${BASE_URL}/users`);
         if (response.data) {
-            console.log("Fetched users:", response.data);
             return response.data;
         } else {
             return false;

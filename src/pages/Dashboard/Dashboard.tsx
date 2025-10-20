@@ -97,12 +97,16 @@ const Dashboard: React.FC = () => {
             flex: 1,
             minWidth: 120,
             renderCell: (params) => (
-                   <Button variant="contained" size="small">
+                   <Button variant="contained" size="small" onClick={() => handleEditTaskClick(params.value)}>
                        Edit
                    </Button>
             )
         }
     ];
+
+    const handleEditTaskClick = (id: number) => {
+        navigate(`/edit-task?id=${id}`);
+    };
 
     const handleAddNewTaskClick = () => {
         navigate("/add-task");
@@ -162,7 +166,6 @@ const Dashboard: React.FC = () => {
                         columns={columns}
                         paginationModel={{ page: 0, pageSize: 5 }}
                         pageSizeOptions={[5, 10, 20]}
-                        onRowSelectionModelChange={(selectedIds) => console.log(selectedIds)}
                         sx={{
                             border: 0,
                             "& .status-done": { color: "green" },

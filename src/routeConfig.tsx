@@ -24,11 +24,11 @@ const getRouteConfigs = (): RouteConfig[] => {
             path: "/add-task",
             component: React.lazy(() => import("./pages/AddTask/AddTask"))
         },
-        // {
-        //     id: 'edit-task',
-        //     path: "/edit-task",
-        //     component: React.lazy(() => import("./pages/EditTask/EditTask")))
-        // },
+        {
+            id: 'edit-task',
+            path: "/edit-task",
+            component: React.lazy(() => import("./pages/EditTask/EditTask"))
+        },
         // {
         //     id: 'users',
         //     path: "/users",

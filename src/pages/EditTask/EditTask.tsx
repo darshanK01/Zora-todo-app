@@ -19,6 +19,8 @@ import dayjs, { Dayjs } from "dayjs";
 import { getUsers } from "../../services/getUsers";
 import { addTask } from "../../services/addTask";
 import SnackBar from "../../utils/SnackBar";
+import TaskForm from "../../components/TaskForm/TaskForm";
+import { getTodoTasks } from "../../services/getTasks";
 
 const newTaskSchema = z.object({
     title: z.string().min(1, "Title is required"),
@@ -31,25 +33,40 @@ const newTaskSchema = z.object({
 
 type NewTaskFormInputs = z.infer<typeof newTaskSchema>;
 
+interface TaskType {
+    title: string;
+    description?: string;
+    dueDate: string;
+    priority: string;
+    status: string;
+    assignedUser: string;
+}
+
 const EditTask: React.FC = () => {
-    const {
-        register,
-        handleSubmit,
-        setValue,
-        control,
-        formState: { errors },
-        reset
-    } = useForm<NewTaskFormInputs>({
-        resolver: zodResolver(newTaskSchema),
-        defaultValues: {
-            title: "",
-            description: "",
-            dueDate: "",
-            priority: "",
-            status: "",
-            assignedUser: "",
-        },
+
+    const [taskData, setTaskData] = React.useState<TaskType>({
+        title: '',
+        description: '',
+        dueDate: '',
+        priority: '',
+        status: '',
+        assignedUser: '',
     });
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        const fetchTasks = async () => {
+            try {
+                const data = await getTodoTasks(id || undefined);
+                console.log("Task data for editing:", data);
+                setTaskData(data);
+            } catch (err) {
+                console.error("Failed to fetch tasks:", err);
+            }
+        };
+        fetchTasks();
+    }, []);
 
 
     const [dueDate, setDueDate] = React.useState<Dayjs | null>(null);
@@ -58,22 +75,18 @@ const EditTask: React.FC = () => {
     const [snackbarData, setSnackbarData] = React.useState<{ message: string; type: 'success' | 'error' }>({ message: '', type: 'success' });
 
     useEffect(() => {
-        const fetchUsers = async () => {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        const fetchTasks = async () => {
             try {
-                const users = await getUsers();
-                setUsers(users);
-            } catch (error) {
-                console.error("Error fetching users:", error);
+                const data = await getTodoTasks(id || undefined);
+                setTaskData(data);
+            } catch (err) {
+                console.error("Failed to fetch tasks:", err);
             }
         };
-
-        fetchUsers();
+        fetchTasks();
     }, []);
-
-    const handleDateChange = (date: Dayjs | null) => {
-        setDueDate(date);
-        setValue("dueDate", date ? date.format("YYYY-MM-DD") : "", { shouldValidate: true });
-    };
 
     const constructPayload = (data: NewTaskFormInputs) => {
         return {
@@ -90,19 +103,10 @@ const EditTask: React.FC = () => {
         const payload = constructPayload(data);
         const response = await addTask(payload);
         if (response) {
-            reset({
-                title: '',
-                description: '',
-                dueDate: '',
-                priority: '',
-                status: '',
-                assignedUser: '',
-            });
-            setDueDate(null);
-            setSnackbarData({ message: 'Task added successfully!', type: 'success' });
+            setSnackbarData({ message: 'Task updated successfully!', type: 'success' });
             setShowSnackbar(true);
         } else {
-            setSnackbarData({ message: 'Failed to add task.', type: 'error' });
+            setSnackbarData({ message: 'Failed to update task.', type: 'error' });
             setShowSnackbar(true);
         }
     };
@@ -121,115 +125,9 @@ const EditTask: React.FC = () => {
             }}
         >
             <Typography variant="h5" fontWeight="bold" textAlign="center">
-                Create New Task
+                Edit Task
             </Typography>
-
-            <form onSubmit={handleSubmit(onSubmit)}>
-                {/* Title Field */}
-                <TextField
-                    label="Title"
-                    variant="outlined"
-                    {...register("title")}
-                    error={!!errors.title}
-                    helperText={errors.title?.message}
-                    fullWidth
-                    margin="normal"
-                />
-
-                {/* Description Field */}
-                <TextField
-                    label="Description"
-                    variant="outlined"
-                    {...register("description")}
-                    error={!!errors.description}
-                    helperText={errors.description?.message}
-                    fullWidth
-                    margin="normal"
-                />
-
-                {/* Due Date Field */}
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                        label="Due Date"
-                        value={dueDate}
-                        onChange={handleDateChange}
-                        slotProps={{
-                            textField: {
-                                fullWidth: true,
-                                margin: "normal",
-                                error: !!errors.dueDate,
-                                helperText: errors.dueDate?.message,
-                            },
-                        }}
-                    />
-                </LocalizationProvider>
-
-                <FormControl fullWidth margin="normal" error={!!errors.priority}>
-                    <InputLabel id="priority-label">Priority</InputLabel>
-                    <Controller
-                        name="priority"
-                        control={control}
-                        render={({ field }) => (
-                            <Select
-                                {...field}
-                                labelId="priority-label"
-                                label="Priority"
-                            >
-                                <MenuItem value="high">High</MenuItem>
-                                <MenuItem value="low">Low</MenuItem>
-                            </Select>
-                        )}
-                    />
-                </FormControl>
-                <FormControl fullWidth margin="normal" error={!!errors.status}>
-                    <InputLabel id="status-label">Status</InputLabel>
-                    <Controller
-                        name="status"
-                        control={control}
-                        render={({ field }) => (
-                            <Select
-                                {...field}
-                                labelId="status-label"
-                                label="Status"
-                            >
-                                <MenuItem value="todo">Todo</MenuItem>
-                                <MenuItem value="inProgress">In Progress</MenuItem>
-                                <MenuItem value="done">Done</MenuItem>
-                            </Select>
-                        )}
-                    />
-                </FormControl>
-
-                <FormControl fullWidth margin="normal" error={!!errors.assignedUser}>
-                    <InputLabel id="assigned-user-label">Assigned User</InputLabel>
-                    <Controller
-                        name="assignedUser"
-                        control={control}
-                        render={({ field }) => (
-                            <Select
-                                {...field}
-                                labelId="assigned-user-label"
-                                label="Assigned User"
-                            >{users.map((user) => (
-                                <MenuItem key={user.id} value={user.id}>
-                                    {user.name} {`(`}{user.id}{`)`}
-                                </MenuItem>
-                            ))}
-                            </Select>
-                        )}
-                    />
-                </FormControl>
-
-                <Button
-                    variant="contained"
-                    color="primary"
-                    type="submit"
-                    fullWidth
-                    sx={{ mt: 2 }}
-                >
-                    Submit
-                </Button>
-            </form>
+            <TaskForm onSubmit={onSubmit} taskData={taskData} shouldResetOnSubmit={true} buttonText="Update Task" />
             <SnackBar
                 message={snackbarData.message}
                 type={snackbarData.type}
