@@ -1,22 +1,9 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-    Button,
-    Paper,
-    TextField,
-    Typography,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-} from "@mui/material";
 import React, { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
-import z, { set } from "zod";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import dayjs, { Dayjs } from "dayjs";
-import { getUsers } from "../../services/getUsers";
+import {
+    Paper,
+    Typography
+} from "@mui/material";
+import z from "zod";
 import { addTask } from "../../services/addTask";
 import SnackBar from "../../utils/SnackBar";
 import TaskForm from "../../components/TaskForm/TaskForm";
@@ -68,9 +55,6 @@ const EditTask: React.FC = () => {
         fetchTasks();
     }, []);
 
-
-    const [dueDate, setDueDate] = React.useState<Dayjs | null>(null);
-    const [users, setUsers] = React.useState<Array<{ id: string; name: string }>>([]);
     const [showSnackbar, setShowSnackbar] = React.useState<boolean>(false);
     const [snackbarData, setSnackbarData] = React.useState<{ message: string; type: 'success' | 'error' }>({ message: '', type: 'success' });
 
@@ -127,7 +111,7 @@ const EditTask: React.FC = () => {
             <Typography variant="h5" fontWeight="bold" textAlign="center">
                 Edit Task
             </Typography>
-            <TaskForm onSubmit={onSubmit} taskData={taskData} shouldResetOnSubmit={true} buttonText="Update Task" />
+            <TaskForm onSubmit={onSubmit} taskData={taskData} isAddTask={false} />
             <SnackBar
                 message={snackbarData.message}
                 type={snackbarData.type}

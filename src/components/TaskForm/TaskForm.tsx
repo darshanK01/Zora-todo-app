@@ -1,9 +1,9 @@
+import React, { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TextField, FormControl, InputLabel, Select, MenuItem, Button, Box } from "@mui/material";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
-import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 import { getUsers } from "../../services/getUsers";
@@ -22,12 +22,10 @@ type TaskFormInputs = z.infer<typeof taskSchema>;
 interface TaskFormProps {
     onSubmit: (data: TaskFormInputs) => void;
     taskData?: TaskFormInputs;
-    shouldResetOnSubmit: boolean;
-    buttonText: string;
+    isAddTask: boolean;
 }
 
-
-const TaskForm = ({ onSubmit, taskData, shouldResetOnSubmit, buttonText }: TaskFormProps) => {
+const TaskForm = ({ onSubmit, taskData, isAddTask }: TaskFormProps) => {
 
     const [dueDate, setDueDate] = React.useState<Dayjs | null>(null);
     const [users, setUsers] = React.useState<Array<{ id: string; name: string }>>([]);
@@ -85,7 +83,7 @@ const TaskForm = ({ onSubmit, taskData, shouldResetOnSubmit, buttonText }: TaskF
 
     const handleSubmitClick = (data: TaskFormInputs) => {
         onSubmit(data);
-        if (shouldResetOnSubmit) {
+        if (isAddTask) {
             reset();
             setDueDate(null);
         }
@@ -185,7 +183,7 @@ const TaskForm = ({ onSubmit, taskData, shouldResetOnSubmit, buttonText }: TaskF
                 />
             </FormControl>
             <Box display="flex" justifyContent="space-between" gap={2} mt={2}>
-                <Button
+                {isAddTask && <Button
                     variant="contained"
                     color="warning"
                     type="reset"
@@ -196,7 +194,7 @@ const TaskForm = ({ onSubmit, taskData, shouldResetOnSubmit, buttonText }: TaskF
                     sx={{ flex: 1 }}
                 >
                     Reset Changes
-                </Button>
+                </Button>}
 
                 <Button
                     variant="contained"
@@ -204,7 +202,7 @@ const TaskForm = ({ onSubmit, taskData, shouldResetOnSubmit, buttonText }: TaskF
                     type="submit"
                     sx={{ flex: 1 }}
                 >
-                    {buttonText}
+                    {isAddTask ? 'Create Task' : "Update Task"}
                 </Button>
             </Box>
 

@@ -8,64 +8,92 @@ import {
     Stack,
     TextField,
     Button,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
 } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { getTodoTasks } from "../../services/getTasks";
+import { getUsers } from "../../services/getUsers";
 import { useNavigate } from "react-router";
 
 const Dashboard: React.FC = () => {
     const [tasks, setTasks] = useState<any[]>([]);
+    const [filteredTasks, setFilteredTasks] = useState<any[]>([]);
+    const [users, setUsers] = useState<Array<{ id: string; name: string }>>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [selectedTaskIds, setSelectedTaskIds] = useState<number[]>([]);
     const [searchTerm, setSearchTerm] = useState<string>("");
-    const [filteredTasks, setFilteredTasks] = useState<any[]>([]);
+    const [statusFilter, setStatusFilter] = useState<string>("");
+    const [assignedUserFilter, setAssignedUserFilter] = useState<string>("");
+
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchTasks = async () => {
+        const fetchData = async () => {
             try {
-                const data = await getTodoTasks();
-                // Ensure every task has a unique "id" field (DataGrid requires it)
-                const formattedData = data.map((task: any, index: number) => ({
-                    id: task.id || index + 1,
-                    ...task,
-                }));
-                setTasks(formattedData);
+                const [taskData, userData] = await Promise.all([getTodoTasks(), getUsers()]);
+                setTasks(taskData);
+                setFilteredTasks(taskData);
+                setUsers(userData);
             } catch (err) {
-                console.error("Failed to fetch tasks:", err);
-                setError("Failed to load tasks. Please try again later.");
+                console.error("Error fetching data:", err);
+                setError("Failed to load data. Please try again later.");
             } finally {
                 setLoading(false);
             }
         };
-        fetchTasks();
+        fetchData();
     }, []);
 
     const debounce = (func: Function, delay: number) => {
         let timer: NodeJS.Timeout;
         return (...args: any[]) => {
             if (timer) clearTimeout(timer);
-            timer = setTimeout(() => {
-                func(...args);
-            }, delay);
+            timer = setTimeout(() => func(...args), delay);
         };
     };
 
-    const handleSearch = useMemo(() => debounce(() => {
-        if (searchTerm.trim() === "") {
-            setFilteredTasks(tasks);
-        } else {
-            const filtered = tasks.filter((task) =>
-                task.title.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-            setFilteredTasks(filtered);
-        }
-    }, 300), [searchTerm, tasks]);
+    const applyFilters = useMemo(
+        () =>
+            debounce(() => {
+                let filtered = tasks;
+
+                if (searchTerm.trim()) {
+                    filtered = filtered.filter((task) =>
+                        task.title.toLowerCase().includes(searchTerm.toLowerCase())
+                    );
+                }
+
+                if (statusFilter) {
+                    filtered = filtered.filter((task) => task.status === statusFilter);
+                }
+
+                if (assignedUserFilter) {
+                    filtered = filtered.filter((task) => task.assignedUser === assignedUserFilter);
+                }
+
+                setFilteredTasks(filtered);
+            }, 300),
+        [tasks, searchTerm, statusFilter, assignedUserFilter]
+    );
 
     useEffect(() => {
-        handleSearch();
-    }, [handleSearch]);
+        applyFilters();
+    }, [applyFilters]);
+
+    const handleClearFilters = () => {
+        setSearchTerm("");
+        setStatusFilter("");
+        setAssignedUserFilter("");
+        setFilteredTasks(tasks);
+    };
+
+    const handleEditTaskClick = (id: number) => navigate(`/edit-task?id=${id}`);
+    const handleAddNewTaskClick = () => navigate("/add-task");
+
+    const paginationModel = { page: 0, pageSize: 5 };
 
     const columns: GridColDef[] = [
         { field: "title", headerName: "Title", flex: 1, minWidth: 150 },
@@ -92,34 +120,34 @@ const Dashboard: React.FC = () => {
                         : "status-todo",
         },
         {
+            field: "assignedUser",
+            headerName: "Assigned User",
+            flex: 1.5,
+            minWidth: 150,
+            valueGetter: (value, row) => {
+                const user = users.find((u) => u.id.toString() === row.assignedUser.toString());
+                return user ? user.name : "-";
+            },
+        },
+        {
             field: "id",
             headerName: "Actions",
             flex: 1,
             minWidth: 120,
             renderCell: (params) => (
-                   <Button variant="contained" size="small" onClick={() => handleEditTaskClick(params.value)}>
-                       Edit
-                   </Button>
-            )
-        }
+                <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => handleEditTaskClick(params.value)}
+                >
+                    Edit
+                </Button>
+            ),
+        },
     ];
 
-    const handleEditTaskClick = (id: number) => {
-        navigate(`/edit-task?id=${id}`);
-    };
-
-    const handleAddNewTaskClick = () => {
-        navigate("/add-task");
-    };
-
     return (
-        <Box
-            sx={{
-                height: "100vh",
-                p: 4,
-                backgroundColor: "#f4f6f8",
-            }}
-        >
+        <Box sx={{ height: "100vh", p: 4, backgroundColor: "#f4f6f8" }}>
             <Typography
                 variant="h4"
                 fontWeight="bold"
@@ -128,31 +156,68 @@ const Dashboard: React.FC = () => {
             >
                 Task Dashboard
             </Typography>
-
             <Paper
                 elevation={3}
                 sx={{
-                    p: 2,
+                    p: 3,
                     height: "80vh",
                     display: "flex",
                     flexDirection: "column",
                 }}
             >
-                <TextField
-                    label="Search Tasks"
-                    variant="outlined"
-                    size="small"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search by Title"
-                    sx={{ maxWidth: 300 }}
-                />
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 2,
+                        alignItems: "center",
+                        mb: 2,
+                    }}
+                >
+                    <TextField
+                        label="Search Tasks"
+                        variant="outlined"
+                        size="small"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Search by Title"
+                        sx={{ width: 250 }}
+                    />
+                    <FormControl size="small" sx={{ minWidth: 150 }}>
+                        <InputLabel>Status</InputLabel>
+                        <Select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            label="Status"
+                        >
+                            <MenuItem value="">All</MenuItem>
+                            <MenuItem value="todo">Todo</MenuItem>
+                            <MenuItem value="inProgress">In Progress</MenuItem>
+                            <MenuItem value="done">Done</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <FormControl size="small" sx={{ minWidth: 180 }}>
+                        <InputLabel>Assigned User</InputLabel>
+                        <Select
+                            value={assignedUserFilter}
+                            onChange={(e) => setAssignedUserFilter(e.target.value)}
+                            label="Assigned User"
+                        >
+                            <MenuItem value="">All</MenuItem>
+                            {users.map((user) => (
+                                <MenuItem key={user.id} value={user.id}>
+                                    {user.name} - ({user.id})
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+
+                    <Button variant="outlined" color="secondary" onClick={handleClearFilters}>
+                        Clear Filters
+                    </Button>
+                </Box>
                 {loading ? (
-                    <Stack
-                        justifyContent="center"
-                        alignItems="center"
-                        sx={{ flexGrow: 1 }}
-                    >
+                    <Stack justifyContent="center" alignItems="center" sx={{ flexGrow: 1 }}>
                         <CircularProgress />
                         <Typography variant="body1" mt={2}>
                             Loading tasks...
@@ -164,7 +229,7 @@ const Dashboard: React.FC = () => {
                     <DataGrid
                         rows={filteredTasks}
                         columns={columns}
-                        paginationModel={{ page: 0, pageSize: 5 }}
+                        initialState={{ pagination: { paginationModel } }}
                         pageSizeOptions={[5, 10, 20]}
                         sx={{
                             border: 0,
@@ -174,7 +239,12 @@ const Dashboard: React.FC = () => {
                         }}
                     />
                 )}
-                <Button variant="contained" color="primary" sx={{ mt: 2, alignSelf: "flex-end" }} onClick={handleAddNewTaskClick}>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ mt: 2, alignSelf: "flex-end" }}
+                    onClick={handleAddNewTaskClick}
+                >
                     Add New Task
                 </Button>
             </Paper>

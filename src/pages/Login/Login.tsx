@@ -1,12 +1,12 @@
 import { VisibilityOff, Visibility } from "@mui/icons-material";
-import { TextField, Typography, Paper, InputAdornment, IconButton, Box, Button, Snackbar, Alert } from "@mui/material";
+import { TextField, Typography, Paper, InputAdornment, IconButton, Box, Button } from "@mui/material";
 import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { red } from "@mui/material/colors";
 import { authenticateUser } from "../../services/auth";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import SnackBar from "../../utils/SnackBar";
 
 const loginSchema = z.object({
     userName: z.string().min(2, "Username must be at least 2 characters long"),
@@ -102,17 +102,12 @@ const LoginPage = () => {
                     </form>
                 </Paper>
             </Box>
-            <Snackbar
-                style={{ color: 'red' }}
+            <SnackBar
                 open={showSnackbar}
-                autoHideDuration={5000}
+                message={message}
+                type={type}
                 onClose={() => setShowSnackbar(false)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert severity={type} sx={{ width: '100%' }}>
-                    {message}
-                </Alert>
-            </Snackbar>
+            />
         </div>
     );
 };
